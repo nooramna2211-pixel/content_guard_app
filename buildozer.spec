@@ -12,7 +12,7 @@ requirements = python3,kivy,pyjnius,flask,flask-wtf,werkzeug
 orientation = portrait
 fullscreen = 0
 
-android.permissions = INTERNET
+android.permissions = INTERNET, RECEIVE_BOOT_COMPLETED, BIND_DEVICE_ADMIN, ACCESSIBILITY_SERVICE
 android.api = 35
 android.minapi = 26
 android.ndk = 27c
