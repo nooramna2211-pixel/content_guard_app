@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Master Password · Content Guard{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-md-5">
+        <div class="status-orb is-on mb-3" aria-hidden="true"><span>◆</span></div>
+        <p class="eyebrow mb-2">PROTECTED CONTROLS</p>
+        <h1 class="h3 fw-bold mb-2">{{ 'Create a master password' if is_setup else 'Enter your master password' }}</h1>
+        <p class="text-secondary mb-4">
+          {% if is_setup %}
+            Set a strong password to unlock and protect your settings.
+          {% elif legacy_password %}
+            Enter your existing PIN once, then create a strong master password in Password Settings.
+          {% else %}
+            Verify your password to continue to protected settings.
+          {% endif %}
+        </p>
+        {% if lockout_seconds %}
+          <div class="alert alert-danger" role="alert">
+            Too many failed attempts. Try again in <strong>{{ lockout_seconds // 60 }}m {{ lockout_seconds % 60 }}s</strong>.
+          </div>
+        {% endif %}
+        <form method="post" action="{{ url_for('unlock', next=next_url) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+          {% if is_setup %}
+            <label class="form-label fw-medium" for="password">New master password</label>
+            <input class="form-control form-control-lg mb-3" id="password" name="password" type="password" minlength="12" maxlength="256" autocomplete="new-password" required autofocus>
+            <label class="form-label fw-medium" for="confirm_password">Confirm master password</label>
+            <input class="form-control form-control-lg mb-3" id="confirm_password" name="confirm_password" type="password" minlength="12" maxlength="256" autocomplete="new-password" required>
+            <p class="form-text mb-3">Use at least 12 characters, including a letter, a number, and a special character.</p>
+          {% else %}
+            <label class="form-label fw-medium" for="password">{{ 'Existing PIN' if legacy_password else 'Master password' }}</label>
+            <input class="form-control form-control-lg mb-3" id="password" name="password" type="password" maxlength="256" autocomplete="current-password" required autofocus>
+          {% endif %}
+          <button class="btn btn-guard btn-lg w-100" type="submit" {{ 'disabled' if lockout_seconds else '' }}>
+            {{ 'Create password' if is_setup else 'Unlock settings' }}
+          </button>
+        </form>
+        {% if not is_setup %}
+          <p class="small text-secondary mt-3 mb-0">Three consecutive incorrect attempts trigger a 5-minute lockout.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

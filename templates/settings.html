@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Password Settings · Content Guard{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <p class="eyebrow mb-2">SECURITY</p>
+    <h1 class="display-6 fw-bold mb-2">Master password settings</h1>
+    <p class="text-secondary mb-4">Change the password required for protected controls.</p>
+
+    <section class="card border-0 shadow-sm mb-4" aria-labelledby="anti-vpn-heading">
+      <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+          <div>
+            <p class="eyebrow mb-2">NETWORK SECURITY</p>
+            <h2 class="h4 fw-bold mb-2" id="anti-vpn-heading">Anti-VPN enforcement</h2>
+            <p class="text-secondary mb-2">
+              Checks active adapters and system proxy settings every 30 seconds. An unauthorized VPN or proxy places filtering in fail-closed lock mode.
+            </p>
+            <p class="small mb-0">
+              <strong>Status:</strong> {{ anti_vpn_last_status }}
+              {% if anti_vpn_last_scan %}<span class="text-secondary"> · Last scan {{ anti_vpn_last_scan }}</span>{% endif %}
+            </p>
+          </div>
+          <span class="badge rounded-pill {{ 'text-bg-danger' if anti_vpn_lock_active else ('text-bg-success' if anti_vpn_enabled else 'text-bg-secondary') }}">
+            {{ 'LOCKED' if anti_vpn_lock_active else ('MONITORING' if anti_vpn_enabled else 'DISABLED') }}
+          </span>
+        </div>
+        {% if anti_vpn_lock_active %}
+          <div class="alert alert-danger mt-3 mb-0" role="alert">
+            <strong>Fail-closed lock is active.</strong> {{ anti_vpn_lock_reason }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-white border-0 px-4 pb-4">
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="toggle_anti_vpn">
+          <input type="hidden" name="anti_vpn_enabled" value="{{ '0' if anti_vpn_enabled else '1' }}">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label class="form-label fw-medium" for="anti_vpn_password">Confirm master password</label>
+              <input class="form-control" id="anti_vpn_password" name="current_password" type="password" autocomplete="current-password" required>
+            </div>
+            <div class="col-md-4 d-grid">
+              <button class="btn {{ 'btn-outline-danger' if anti_vpn_enabled else 'btn-guard' }}" type="submit" {{ 'disabled' if lockout_seconds else '' }}>
+                {{ 'Disable enforcement' if anti_vpn_enabled else 'Enable enforcement' }}
+              </button>
+            </div>
+          </div>
+          <div class="form-text mt-2">You must confirm your master password to change this setting.</div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h2 class="h5 fw-bold mb-2">Authorized proxy hosts</h2>
+        <p class="small text-secondary">Proxy servers are unauthorized unless their hostname or IP is listed here. Leave empty to reject all active proxies. VPN adapters are always treated as unauthorized.</p>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="save_proxy_allowlist">
+          <label class="form-label fw-medium" for="authorized_proxy_hosts">Comma-separated hostnames or IP addresses</label>
+          <input class="form-control mb-3" id="authorized_proxy_hosts" name="authorized_proxy_hosts" type="text" maxlength="4096" placeholder="proxy.example.org, 192.0.2.10" value="{{ authorized_proxy_hosts }}">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label class="form-label fw-medium" for="proxy_list_password">Confirm master password</label>
+              <input class="form-control" id="proxy_list_password" name="current_password" type="password" autocomplete="current-password" required>
+            </div>
+            <div class="col-md-4 d-grid">
+              <button class="btn btn-outline-secondary" type="submit" {{ 'disabled' if lockout_seconds else '' }}>Save authorized hosts</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h2 class="h5 fw-bold mb-3">Recent security alerts</h2>
+        {% if security_alerts %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead><tr><th>Time</th><th>Event</th><th>Details</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for alert in security_alerts %}
+                  <tr>
+                    <td class="text-nowrap">{{ alert.created_at }}</td>
+                    <td>{{ alert.category }}</td>
+                    <td>{{ alert.detail }}</td>
+                    <td>
+                      <span class="badge {{ 'text-bg-secondary' if alert.resolved_at else 'text-bg-danger' }}">
+                        {{ 'Resolved' if alert.resolved_at else 'Active' }}
+                      </span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-secondary mb-0">No network security events recorded.</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <form method="post" class="card border-0 shadow-sm">
+      <input type="hidden" name="action" value="change_password">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="card-body p-4">
+        {% if lockout_seconds %}
+          <div class="alert alert-danger" role="alert">
+            Password changes are temporarily locked. Try again in <strong>{{ lockout_seconds // 60 }}m {{ lockout_seconds % 60 }}s</strong>.
+          </div>
+        {% endif %}
+        {% if legacy_password %}
+          <div class="alert alert-warning" role="note">
+            This database still uses the previous PIN. Enter it as your current password and set a strong master password to complete the upgrade.
+          </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label fw-medium" for="current_password">{{ 'Current PIN' if legacy_password else 'Current password' }}</label>
+          <input class="form-control" id="current_password" name="current_password" type="password" maxlength="256" autocomplete="current-password" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-medium" for="new_password">New master password</label>
+          <input class="form-control" id="new_password" name="new_password" type="password" minlength="12" maxlength="256" autocomplete="new-password" required>
+        </div>
+        <div>
+          <label class="form-label fw-medium" for="confirm_password">Confirm new password</label>
+          <input class="form-control" id="confirm_password" name="confirm_password" type="password" minlength="12" maxlength="256" autocomplete="new-password" required>
+        </div>
+        <p class="form-text mt-3 mb-0">Use at least 12 characters, including a letter, a number, and a special character.</p>
+      </div>
+      <div class="card-footer bg-white border-0 px-4 pb-4">
+        <button class="btn btn-guard" type="submit" {{ 'disabled' if lockout_seconds else '' }}>Update master password</button>
+      </div>
+    </form>
+    <p class="small text-secondary mt-3">Passwords are stored as Werkzeug-generated salted hashes, never plaintext. Three consecutive incorrect password attempts trigger a 5-minute lockout.</p>
+  </div>
+</div>
+{% endblock %}

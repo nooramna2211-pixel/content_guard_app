@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Search Simulator · Content Guard{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <p class="eyebrow mb-2">TEST YOUR FILTERS</p>
+    <h1 class="display-6 fw-bold mb-2">Search simulator</h1>
+    <p class="text-secondary mb-4">Try a phrase or URL to see whether it matches a saved keyword or blocked domain.</p>
+
+    <form method="post" class="card border-0 shadow-sm mb-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="card-body p-4">
+        <label class="form-label fw-medium" for="query">Search query or phrase</label>
+        <div class="input-group input-group-lg">
+          <input class="form-control" id="query" name="query" type="search" maxlength="500" placeholder="Try a phrase, keyword, or example.com" value="{{ query }}" required>
+          <button class="btn btn-guard" type="submit">Test query</button>
+        </div>
+        <div class="form-text">Checks for blocked keyword substrings in English, Roman Urdu, and Urdu, as well as domains on your blocklist.</div>
+      </div>
+    </form>
+
+    {% if tested %}
+      {% if matches %}
+        <div class="card simulator-result result-blocked border-0 shadow-sm" role="alert">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="result-mark" aria-hidden="true">×</span>
+              <div>
+                <span class="badge text-bg-danger mb-1">ACCESS BLOCKED</span>
+                <h2 class="h5 mb-0">A filter rule matched</h2>
+              </div>
+            </div>
+            <p class="mb-3"><strong>Tested:</strong> <span class="query-display">{{ query }}</span></p>
+            <ul class="list-group list-group-flush">
+              {% for match in matches %}
+                <li class="list-group-item bg-transparent px-0">
+                  <strong>{{ match.type }}:</strong> {{ match.value }}
+                  {% if match.detail %}<span class="text-secondary"> · {{ match.detail }}</span>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% else %}
+        <div class="card simulator-result result-allowed border-0 shadow-sm" role="status">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3">
+              <span class="result-mark" aria-hidden="true">✓</span>
+              <div>
+                <span class="badge text-bg-success mb-1">ALLOWED</span>
+                <h2 class="h5 mb-0">No matching rule found</h2>
+              </div>
+            </div>
+            <p class="mb-0 mt-3"><strong>Tested:</strong> <span class="query-display">{{ query }}</span></p>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+    <p class="small text-secondary mt-4">Matching is case-insensitive and flags a query whenever it contains a saved keyword anywhere in the text. The simulator checks saved rules only; it does not intercept or block actual browser searches or network traffic.</p>
+  </div>
+</div>
+{% endblock %}

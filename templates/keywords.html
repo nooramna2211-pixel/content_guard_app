@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Keyword Filter · Content Guard{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <p class="eyebrow mb-2">CUSTOM FILTER DICTIONARY</p>
+    <h1 class="display-6 fw-bold mb-2">Keyword filtering</h1>
+    <p class="text-secondary mb-4">Manage the pre-loaded and custom dictionary in English, Roman Urdu, and Urdu script. Any keyword appearing within a simulator query triggers a match.</p>
+
+    <form method="post" class="card border-0 shadow-sm mb-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="card-body p-4">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label fw-medium" for="keyword">Keyword or phrase</label>
+            <input class="form-control" id="keyword" name="keyword" type="text" maxlength="80" placeholder="Enter a word or phrase" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium" for="language">Language</label>
+            <select class="form-select" id="language" name="language" required>
+              {% for language in languages %}
+                <option value="{{ language }}">{{ language }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2 d-grid">
+            <button class="btn btn-guard" type="submit">Add</button>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3 px-4">
+        <h2 class="h5 mb-0">Your dictionary <span class="text-secondary fw-normal">({{ entries|length }})</span></h2>
+      </div>
+      {% if entries %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead><tr><th class="ps-4">Keyword</th><th>Language</th><th class="text-end pe-4">Action</th></tr></thead>
+            <tbody>
+              {% for entry in entries %}
+                <tr>
+                  <td class="ps-4">{{ entry.keyword }}</td>
+                  <td><span class="badge text-bg-light">{{ entry.language }}</span></td>
+                  <td class="text-end pe-4">
+                    <form method="post" action="{{ url_for('delete_keyword', keyword_id=entry.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="card-body p-4 text-secondary">No keywords yet. Add a word or phrase above.</div>
+      {% endif %}
+    </div>
+    <p class="small text-secondary mt-3">Keyword changes require a verified master password. This dictionary is used by the Search Simulator; it does not inspect real searches or page content.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "scheme": "https"
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": [
+        "google.com",
+        "google.co.uk",
+        "google.ca",
+        "google.com.au",
+        "google.co.in",
+        "google.de",
+        "google.fr",
+        "google.com.pk",
+        "youtube.com",
+        "youtu.be"
+      ],
+      "schemes": ["http"],
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

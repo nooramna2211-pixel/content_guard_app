@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Content Guard",
+  "version": "1.0.0",
+  "description": "Checks Google and YouTube search terms against your local Content Guard keyword list.",
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "declarativeNetRequest",
+    "storage",
+    "tabs",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:5000/*",
+    "*://*.google.com/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.ca/*",
+    "*://*.google.com.au/*",
+    "*://*.google.co.in/*",
+    "*://*.google.de/*",
+    "*://*.google.fr/*",
+    "*://*.google.com.pk/*",
+    "*://*.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.ca/*",
+        "*://*.google.com.au/*",
+        "*://*.google.co.in/*",
+        "*://*.google.de/*",
+        "*://*.google.fr/*",
+        "*://*.google.com.pk/*",
+        "*://*.youtube.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "search_safety_rules",
+        "enabled": true,
+        "path": "rules/search-rules.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "blocked.css", "blocked.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

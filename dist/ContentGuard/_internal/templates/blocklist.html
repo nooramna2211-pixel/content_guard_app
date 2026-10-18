@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Blocklist · Content Guard{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <p class="eyebrow mb-2">MANUAL DOMAIN CONTROLS</p>
+    <h1 class="display-6 fw-bold mb-2">Blocklist management</h1>
+    <p class="text-secondary mb-4">Add domains you want included in your local Content Guard list.</p>
+
+    <form method="post" class="card border-0 shadow-sm mb-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="card-body p-4">
+        <label class="form-label fw-medium" for="domain">Add a domain</label>
+        <div class="input-group">
+          <input class="form-control" id="domain" name="domain" type="text" placeholder="example.com" maxlength="253" required>
+          <button class="btn btn-guard" type="submit">Add domain</button>
+        </div>
+        <div class="form-text">Enter a hostname only, without a URL path or IP address.</div>
+      </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Your domains</h2>
+        <span class="badge rounded-pill text-bg-light">{{ domains|length }}</span>
+      </div>
+      {% if domains %}
+        <ul class="list-group list-group-flush">
+          {% for entry in domains %}
+            <li class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
+              <span class="font-monospace">{{ entry.domain }}</span>
+              <form method="post" action="{{ url_for('delete_domain', domain_id=entry.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Remove {{ entry.domain }}">Remove</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="card-body p-4 text-secondary">Your custom domain list is empty.</div>
+      {% endif %}
+    </div>
+    <p class="small text-secondary mt-3">Domain changes require a verified master password. Entries are not enforced against network traffic by this Flask application.</p>
+  </div>
+</div>
+{% endblock %}

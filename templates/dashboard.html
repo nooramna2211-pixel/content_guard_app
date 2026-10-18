@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Content Guard{% endblock %}
+{% block content %}
+<section class="row justify-content-center">
+  <div class="col-lg-10 col-xl-9">
+    <div class="mb-4">
+      <p class="eyebrow mb-2">FAMILY-FRIENDLY BROWSING</p>
+      <h1 class="display-6 fw-bold mb-2">Your protection dashboard</h1>
+      <p class="text-secondary mb-0">Manage your filtering preferences in one simple place.</p>
+    </div>
+
+    <div class="card protection-card border-0 shadow-sm mb-4">
+      <div class="card-body p-4 p-md-5 text-center">
+        <div class="status-orb {{ 'is-on' if protection_enabled else 'is-off' }}" aria-hidden="true">
+          <span>{{ '✓' if protection_enabled else '!' }}</span>
+        </div>
+        <div class="mt-3">
+          <span class="badge rounded-pill {{ 'text-bg-success' if protection_enabled else 'text-bg-secondary' }}">
+            {{ 'PROTECTION ON' if protection_enabled else 'PROTECTION OFF' }}
+          </span>
+        </div>
+        <h2 class="h4 mt-3 mb-2">{{ 'You’re all set' if protection_enabled else 'Protection is paused' }}</h2>
+        <p class="text-secondary mx-auto dashboard-copy">
+          {{ 'Your saved preferences are enabled in this dashboard.' if protection_enabled else 'Turn protection on to activate this dashboard’s saved status.' }}
+        </p>
+        <form method="post" action="{{ url_for('toggle_protection') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-lg {{ 'btn-outline-danger' if protection_enabled else 'btn-guard' }}" type="submit">
+            {{ 'Turn protection off' if protection_enabled else 'Turn protection on' }}
+          </button>
+        </form>
+        <p class="small text-secondary mt-3 mb-0">Your master password is required before changing protection status.</p>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <div class="eyebrow mb-2">NETWORK SECURITY</div>
+          <h2 class="h5 mb-1">Anti-VPN enforcement</h2>
+          <p class="text-secondary mb-0">
+            {% if anti_vpn_lock_active %}
+              Fail-closed lock active: {{ anti_vpn_lock_reason }}
+            {% elif anti_vpn_enabled %}
+              Monitoring active network adapters and proxy settings.
+            {% else %}
+              Monitoring is disabled. Configure it in Password Settings.
+            {% endif %}
+          </p>
+        </div>
+        <span class="badge rounded-pill {{ 'text-bg-danger' if anti_vpn_lock_active else ('text-bg-success' if anti_vpn_enabled else 'text-bg-secondary') }}">
+          {{ 'LOCKED' if anti_vpn_lock_active else ('ON' if anti_vpn_enabled else 'OFF') }}
+        </span>
+        <a class="btn btn-outline-secondary" href="{{ url_for('settings') }}">Network security settings</a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-sm-6">
+        <a class="card summary-card h-100 text-decoration-none" href="{{ url_for('blocklist') }}">
+          <div class="card-body p-4">
+            <span class="summary-icon">▤</span>
+            <div class="display-6 fw-semibold mt-3">{{ domain_count }}</div>
+            <div class="text-secondary">Blocked domains</div>
+            <span class="summary-link">Manage blocklist →</span>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a class="card summary-card h-100 text-decoration-none" href="{{ url_for('keywords') }}">
+          <div class="card-body p-4">
+            <span class="summary-icon">文</span>
+            <div class="display-6 fw-semibold mt-3">{{ keyword_count }}</div>
+            <div class="text-secondary">Custom keywords</div>
+            <span class="summary-link">Manage keywords →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-4 mb-0" role="note">
+      <strong>Demo limitation:</strong> Safe-search preferences, domain entries, and keywords are stored by this web app. Enforcing them on browsers or devices requires a separate filtering proxy, DNS service, or device-management integration.
+    </div>
+  </div>
+</section>
+{% endblock %}

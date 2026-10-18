@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Access Blocked · Content Guard</title>
+  <link rel="stylesheet" href="blocked.css">
+  <script src="blocked.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <section class="card" aria-labelledby="blocked-title">
+      <div class="shield" aria-hidden="true">◆</div>
+      <p class="eyebrow">FAMILY-FRIENDLY BROWSING</p>
+      <h1 id="blocked-title">ACCESS BLOCKED</h1>
+      <p class="subtitle">Content Guard Enforcement</p>
+      <div class="rule">
+        <span class="rule-label">Why this was blocked</span>
+        <p id="reason">This request matches an active Content Guard rule.</p>
+      </div>
+      <p class="source" id="source"></p>
+      <a class="button" href="http://127.0.0.1:5000/">Open Content Guard</a>
+      <p class="note">If you believe this is a mistake, ask your administrator to review the filter settings.</p>
+    </section>
+  </main>
+</body>
+</html>
